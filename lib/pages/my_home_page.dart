@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_to_bloc/blocs/color/color_bloc.dart';
+import 'package:flutter_bloc_to_bloc/observers/color_bloc_observer.dart';
+import 'package:flutter_bloc_to_bloc/observers/counter_bloc_observer.dart';
 import '../blocs/counter/counter_bloc.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -15,65 +17,57 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ColorBloc, ColorState>(
-      listener: (context, colorState) {
-        if (colorState.color == Colors.red) {
-          incrementSize = 1;
-        } else if (colorState.color == Colors.green) {
-          incrementSize = 10;
-        } else if (colorState.color == Colors.blue) {
-          incrementSize = 100;
-        } else if (colorState.color == Colors.black) {
-          incrementSize = -100;
-          context
-              .read<CounterBloc>()
-              .add(ChangeCounterEvent(incrementSize: incrementSize));
-        }
-      },
-      child: Scaffold(
-        backgroundColor: context.watch<ColorBloc>().state.color,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton(
-                onPressed: () {
-                  context.read<ColorBloc>().add(ChangeColorEvent());
-                },
-                child: const Text(
-                  'Change Color',
-                  style: TextStyle(
-                    fontSize: 24.0,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20.0),
-              Text(
-                '${context.watch<CounterBloc>().state.counter}',
-                style: const TextStyle(
-                  fontSize: 52.0,
-                  fontWeight: FontWeight.bold,
+    return Scaffold(
+      backgroundColor: BlocOverrides.runZoned(
+        () => context.watch<ColorBloc>().state.color,
+        blocObserver: ColorBlocObserver(),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              onPressed: () {
+                context.read<ColorBloc>().add(ChangeColorEvent());
+              },
+              child: const Text(
+                'Change Color',
+                style: TextStyle(
+                  fontSize: 24.0,
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 20.0),
-              TextButton(
-                onPressed: () {
-                  context
-                      .read<CounterBloc>()
-                      .add(ChangeCounterEvent(incrementSize: incrementSize));
-                },
-                child: const Text(
-                  'Increment Counter',
-                  style: TextStyle(
-                    fontSize: 24.0,
+            ),
+            const SizedBox(height: 20.0),
+            BlocOverrides.runZoned(
+              () {
+                return Text(
+                  '${context.watch<CounterBloc>().state.counter}',
+                  style: const TextStyle(
+                    fontSize: 52.0,
+                    fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
+                );
+              },
+              blocObserver: CounterBlocObserver(),
+            ),
+            const SizedBox(height: 20.0),
+            TextButton(
+              onPressed: () {
+                context
+                    .read<CounterBloc>()
+                    .add(ChangeCounterEvent());
+              },
+              child: const Text(
+                'Increment Counter',
+                style: TextStyle(
+                  fontSize: 24.0,
+                  color: Colors.white,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

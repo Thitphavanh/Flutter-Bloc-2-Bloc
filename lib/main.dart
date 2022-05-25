@@ -4,7 +4,13 @@ import 'package:flutter_bloc_to_bloc/blocs/color/color_bloc.dart';
 import 'package:flutter_bloc_to_bloc/blocs/counter/counter_bloc.dart';
 import 'package:flutter_bloc_to_bloc/pages/splash_screen_page.dart';
 
+import 'observers/color_bloc_observer.dart';
+
 void main() {
+  // BlocOverrides.runZoned(
+  //   () {},
+  //   blocObserver: ColorBlocObserver(),
+  // );
   runApp(const MyApp());
 }
 
@@ -19,7 +25,9 @@ class MyApp extends StatelessWidget {
           create: (context) => ColorBloc(),
         ),
         BlocProvider<CounterBloc>(
-          create: (context) => CounterBloc(),
+          create: (context) => CounterBloc(
+            colorBloc: context.read<ColorBloc>(),
+          ),
         ),
       ],
       child: MaterialApp(
